@@ -1,0 +1,6 @@
+FastHEP -- Headers for doing special relativity with vector intrinsics
+
+Currently these headers work on intel core2 and later processors.
+It would be neat to have altivec as well and backwards compatibility with older machines.
+
+In order to use these headers you need a blas installed on your machine.
