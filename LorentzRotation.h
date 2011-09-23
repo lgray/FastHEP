@@ -96,7 +96,7 @@ namespace fhep {
     // they are redundant
     // here are operations on other matrices
     inline LorentzRotation operator* (const LorentzRotation& o) const {
-      float res[16];
+      float res[16] __attribute__ ((aligned (16)));
       cblas_sgemm(CblasColMajor,
 		  CblasNoTrans,
 		  CblasNoTrans,
@@ -118,7 +118,7 @@ namespace fhep {
     }  
     // inversion
     LorentzRotation operator~() const {
-      float res[16];
+      float res[16] __attribute__ ((aligned (16)));
       __m128 c0 = _mm_load_ps(&m[0]);
       __m128 c1 = _mm_load_ps(&m[4]);
       __m128 c2 = _mm_load_ps(&m[8]);
@@ -158,7 +158,7 @@ namespace fhep {
     
     //here are operations on lorentz 4 vectors
     LorentzVector operator* (const LorentzVector& o) const{
-      float res[4];
+      float res[4] __attribute__ ((aligned (16)));
       cblas_sgemv(CblasColMajor,
 		  CblasNoTrans,
 		  4,4,
@@ -177,4 +177,5 @@ namespace fhep {
   //ClassDef(LorentzRotation,1);
 };
 
+}
 #endif
