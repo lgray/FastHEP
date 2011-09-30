@@ -1,7 +1,8 @@
-#include "LorentzVector.h"
-
 #ifndef __fhep_LorentzRotation_h__
 #define __fhep_LorentzRotation_h__
+
+#include "LorentzVector.h"
+#include "SpatialRotation.h"
 
 #include <vecLib/cblas.h>
 #include <iostream>
@@ -51,7 +52,9 @@ namespace fhep {
     LorentzRotation(float x, float y, float z) {
       setBoost(x,y,z);
     }
-    
+    // this destroys any previous information
+    // if you want to boost a rotation do
+    // tot = boost*rot
     void setBoost(const float& bx, 
 		  const float& by, 
 		  const float& bz) {
@@ -85,13 +88,17 @@ namespace fhep {
       _mm_store_ps(&m[8],_mm_add_ps(one,_mm_mul_ps(scal,_mm_mul_ps(_mm_set1_ps(b[2]),b))));
       scal = _mm_shuffle_ps(scal,scal,0xb4); // 2 -> 3
       one = _mm_shuffle_ps(one,one,0xb4);
-      _mm_store_ps(&m[12],_mm_add_ps(one,_mm_mul_ps(scal,_mm_mul_ps(_mm_set1_ps(b[3]),b))));
+      _mm_store_ps(&m[12],_mm_add_ps(one,_mm_mul_ps(scal,_mm_mul_ps(_mm_set1_ps(b[3]),b))));      
     }
     
     inline LorentzRotation& operator= (const LorentzRotation& o) {
       memcpy(m,o.m,16*sizeof(float));
       return *this;
     }
+    inline LorentzRotation& operator= (const SpatialRotation& o) {
+      memcpy(m,o.array(),16*sizeof(float));
+      return *this;
+    }    
     // I am not going to implement the "Transform" functions
     // they are redundant
     // here are operations on other matrices
@@ -116,6 +123,29 @@ namespace fhep {
 		  0,m,4); // computes c = m*o for a 4x4 matrix of floats, putting the result into m
       return *this;
     }  
+    // multiplication by a rotation
+    inline LorentzRotation operator* (const SpatialRotation& o) const {
+      float res[16] __attribute__ ((aligned (16)));
+      cblas_sgemm(CblasColMajor,
+		  CblasNoTrans,
+		  CblasNoTrans,
+		  4,4,4,
+		  1.0,m,4,
+		  o.array(),4,
+		  0,res,4); // computes c = m*o for a 4x4 matrix of floats, putting the result into m
+      return LorentzRotation(res);
+    }
+    inline LorentzRotation& operator*= (const SpatialRotation& o) {
+      cblas_sgemm(CblasColMajor,
+		  CblasNoTrans,
+		  CblasNoTrans,
+		  4,4,4,
+		  1.0,m,4,
+		  o.array(),4,
+		  0,m,4); // computes c = m*o for a 4x4 matrix of floats, putting the result into m
+      return *this;
+    }  
+
     // inversion
     LorentzRotation operator~() const {
       float res[16] __attribute__ ((aligned (16)));
@@ -168,6 +198,8 @@ namespace fhep {
       return LorentzVector(res);
     }
     
+    const float* array() const { return m; }
+
     inline void Print() const {
       for( int i = 0; i < 16; ++i ) {
 	std::cout << m[i/4*4 + i%4] << ' ';

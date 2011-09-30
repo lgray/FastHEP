@@ -95,7 +95,7 @@ namespace fhep {
       _fP4.base = _mm_setr_ps(0.0,x,y,z);
     }
     inline void setPxPyPzE(const float& px, const float& py, const float& pz) {
-      setXYZT(px,py,pz);
+      setXYZ(px,py,pz);
     }    
     
     // this rotates indices to what ROOTy people are used to
@@ -182,8 +182,8 @@ namespace fhep {
     }
 
     inline float pseudorapidity() const {
-      float mag = mag();
-      return 0.5*(std::log(mag + _fP4.v[3]) - std::log(mag - _fP4.v[3])); // -(1/2)*log(|p| - z/ |p| + z)
+      float ma = mag();
+      return 0.5*(std::log(ma + _fP4.v[3]) - std::log(ma - _fP4.v[3])); // -(1/2)*log(|p| - z/ |p| + z)
     }
     
     inline float eta() const { return pseudorapidity(); }
